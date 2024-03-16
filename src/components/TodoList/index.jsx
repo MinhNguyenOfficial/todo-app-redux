@@ -1,18 +1,55 @@
 import { Col, Row, Input, Button, Select, Tag, Space } from 'antd';
 import Todo from '../Todo';
+import { useDispatch, useSelector } from 'react-redux';
+import { addTodo } from '../../redux/actions';
+import { v4 as uuidv4 } from 'uuid';
+import { useState } from 'react';
+import { todosRemainingSelector } from '../../redux/selectors';
 
 export default function TodoList() {
+  const todoList = useSelector(todosRemainingSelector);
+  const [todoName, setTodoName] = useState('');
+  const [priority, setPriority] = useState('Medium');
+  const dispatch = useDispatch();
+
+  const handleTodoInputChange = (e) => {
+    setTodoName(e.target.value);
+  };
+
+  const handlePrioritySelectChange = (value) => {
+    setPriority(value);
+  };
+
+  const handleAddButtonClick = () => {
+    dispatch(
+      addTodo({
+        id: uuidv4(),
+        name: todoName,
+        priority: priority,
+        completed: false,
+      })
+    );
+    setTodoName('');
+    setPriority('Medium');
+  };
+
   return (
     <Row style={{ height: 'calc(100% - 40px)' }}>
       <Col span={24} style={{ height: 'calc(100% - 40px)', overflowY: 'auto' }}>
-        <Todo name="Learn React" prioriry="High" />
-        <Todo name="Learn Redux" prioriry="Medium" />
-        <Todo name="Learn JavaScript" prioriry="Low" />
+        {todoList.map((todo) => (
+          <Todo
+            key={todo.id}
+            id={todo.id}
+            name={todo.name}
+            priority={todo.priority}
+            isCompleted={todo.completed}
+          />
+        ))}
       </Col>
       <Col span={24}>
         <Space.Compact compact="true" style={{ display: 'flex' }}>
-          <Input />
-          <Select defaultValue="Medium">
+          <Input value={todoName} onChange={handleTodoInputChange} />
+          <Select value={priority} onChange={handlePrioritySelectChange}>
             <Select.Option value="High" label="High">
               <Tag color="red">High</Tag>
             </Select.Option>
@@ -23,7 +60,9 @@ export default function TodoList() {
               <Tag color="gray">Low</Tag>
             </Select.Option>
           </Select>
-          <Button type="primary">Add</Button>
+          <Button type="primary" onClick={handleAddButtonClick}>
+            Add
+          </Button>
         </Space.Compact>
       </Col>
     </Row>
